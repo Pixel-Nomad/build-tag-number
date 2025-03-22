@@ -1,4 +1,3 @@
-//Trying to avoid any npm installs or anything that takes extra time...
 const   https = require('https'),
         zlib = require('zlib'),
         fs = require('fs'),
@@ -95,9 +94,26 @@ function main() {
             const regex = new RegExp(regexString);
             nrTags = result.filter(d => d.ref.match(regex));
             
-            const MAX_OLD_NUMBERS = 5; //One or two ref deletes might fail, but if we have lots then there's something wrong!
+            const MAX_OLD_NUMBERS = 50; // Reserve 50 tags
             if (nrTags.length > MAX_OLD_NUMBERS) {
-                fail(`ERROR: Too many ${prefix}build-number- refs in repository, found ${nrTags.length}, expected only 1. Check your tags!`);
+                // Only delete the oldest tag if we exceed the reserved number
+                const oldestTag = nrTags.sort((a, b) => {
+                    const aNr = parseInt(a.ref.match(/-(\d+)$/)[1]);
+                    const bNr = parseInt(b.ref.match(/-(\d+)$/)[1]);
+                    return aNr - bNr;
+                })[0];
+
+                console.log(`Deleting oldest build counter: ${oldestTag.ref}`);
+                request('DELETE', `/repos/${env.GITHUB_REPOSITORY}/git/${oldestTag.ref}`, null, (err, status, result) => {
+                    if (status !== 204 || err) {
+                        console.warn(`Failed to delete ref ${oldestTag.ref}, status: ${status}, err: ${err}, result: ${JSON.stringify(result)}`);
+                    } else {
+                        console.log(`Deleted ${oldestTag.ref}`);
+                    }
+                });
+
+                // Remove the oldest tag from the list
+                nrTags = nrTags.filter(tag => tag.ref !== oldestTag.ref);
             }
             
             //Existing build numbers:
@@ -109,7 +125,7 @@ function main() {
             nextBuildNumber = currentBuildNumber + 1;
             console.log(`Updating build counter to ${nextBuildNumber}...`);
         } else {
-            if (err) {
+            if (err) {
                 fail(`Failed to get refs. Error: ${err}, status: ${status}`);
             } else {
                 fail(`Getting build-number refs failed with http status ${status}, error: ${JSON.stringify(result)}`);
@@ -134,27 +150,8 @@ function main() {
  
             //Save to file so it can be used for next jobs...
             fs.writeFileSync('BUILD_NUMBER', nextBuildNumber.toString());
-            
-            //Cleanup
-            if (nrTags) {
-                console.log(`Deleting ${nrTags.length} older build counters...`);
-            
-                for (let nrTag of nrTags) {
-                    request('DELETE', `/repos/${env.GITHUB_REPOSITORY}/git/${nrTag.ref}`, null, (err, status, result) => {
-                        if (status !== 204 || err) {
-                            console.warn(`Failed to delete ref ${nrTag.ref}, status: ${status}, err: ${err}, result: ${JSON.stringify(result)}`);
-                        } else {
-                            console.log(`Deleted ${nrTag.ref}`);
-                        }
-                    });
-                }
-            }
-
         });
     });
 }
 
 main();
-
-
-
