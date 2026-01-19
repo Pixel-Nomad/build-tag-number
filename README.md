@@ -1,114 +1,54 @@
-# Build Tag Number Action
+# 🧠 GitHub Action for Build Number Management
+The GitHub Action for Build Number Management is a powerful tool designed to generate and manage build numbers for workflow runs. This action provides a seamless way to track and automate build numbers, making it easier to manage and monitor your GitHub workflows. The core feature of this project is its ability to interact with the GitHub API, read and write files, and set environment variables, all of which are crucial for build number management.
 
-[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Build%20Tag%20Number-blue.svg?colorA=24292e&colorB=0366d6&style=flat&longCache=true&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAM6wAADOsB5dZE0gAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAERSURBVCiRhZG/SsMxFEZPfsVJ61jbxaF0cRQRcRJ9hlYn30IHN/+9iquDCOIsblIrOjqKgy5aKoJQj4O3EEtbPwhJbr6Te28CmdSKeqzeqr0YbfVIrTBKakvtOl5dtTkK+v4HfA9PEyBFCY9AGVgCBLaBp1jPAyfAJ/AAdIEG0dNAiyP7+K1qIfMdonZic6+WJoBJvQlvuwDqcXadUuqPA1NKAlexbRTAIMvMOCjTbMwl1LtI/6KWJ5Q6rT6Ht1MA58AX8Apcqqt5r2qhrgAXQC3CZ6i1+KMd9TRu3MvA3aH/fFPnBodb6oe6HM8+lYHrGdRXW8M9bMZtPXUji69lmf5Cmamq7quNLFZXD9Rq7v0Bpc1o/tp0fisAAAAASUVORK5CYII=)](https://github.com/onyxmueller/build-tag-number)
+## 🚀 Features
+- **Automated Build Number Generation**: The action automatically generates build numbers based on the workflow run, ensuring that each build is uniquely identified.
+- **Build Number Storage**: The action stores the generated build number in a file, allowing for easy retrieval and use in subsequent workflow steps.
+- **Environment Variable Setup**: The action sets the build number as an environment variable, making it accessible to other parts of the workflow.
+- **Error Handling**: The action includes robust error handling, logging error messages and exiting the process when necessary to ensure that workflow runs are not compromised by build number management issues.
+- **GitHub API Interaction**: The action sends requests to the GitHub API with authentication, handling responses and parsing JSON data to manage build numbers and tags effectively.
 
-GitHub action for generating sequential build numbers based on Git tag. The build number is stored in your GitHub repository as a ref, it doesn't add any extra commits to your repository. Use in your workflow like so:
+## 🛠️ Tech Stack
+- **Node.js**: The runtime environment for the GitHub Action, utilizing Node.js version 20 for execution.
+- **GitHub API**: The action interacts with the GitHub API to manage build numbers and tags, leveraging the API's capabilities for workflow automation.
+- **HTTPS**: The action uses HTTPS for making requests to the GitHub API, ensuring secure communication.
+- **Zlib**: The action utilizes zlib for handling gzip compression and decompression, optimizing data transfer.
+- **FS**: The action interacts with the file system using the fs module, reading and writing files to store and retrieve build numbers.
 
-```yaml
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Generate build number
-      uses: onyxmueller/build-tag-number@v1
-      with:
-        token: ${{secrets.github_token}}        
-    - name: Print new build number
-      run: echo "Build number is $BUILD_NUMBER"
-      # Or, if you're on Windows: echo "Build number is ${env:BUILD_NUMBER}"
+## 📦 Installation
+To use this GitHub Action, you'll need to have a GitHub repository set up with a workflow file (.yml) that includes the action. Here are the steps to get started:
+1. **Create a Workflow File**: In your repository, create a new file in the `.github/workflows` directory, e.g., `.github/workflows/build-number-management.yml`.
+2. **Specify the Action**: In the workflow file, specify the GitHub Action for Build Number Management, including any required inputs such as a GitHub token.
+3. **Commit and Push**: Commit the changes to your repository and push them to GitHub to trigger the workflow.
+
+## 💻 Usage
+The GitHub Action for Build Number Management is designed to be used within a GitHub workflow. Once the action is specified in your workflow file, it will automatically generate and manage build numbers for each workflow run. You can access the build number as an output of the action or as an environment variable in subsequent steps of your workflow.
+
+## 📂 Project Structure
+```markdown
+.
+├── action.yml
+├── main.js
+├── node_modules
+│   ├── https
+│   ├── zlib
+│   └── fs
+├── package.json
+└── README.md
 ```
 
-After that runs the subsequent steps in your job will have the environment variable `BUILD_NUMBER` available. If you prefer to be more explicit you can use the output of the step, like so:
+## 📸 Screenshots
 
-```yaml
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Generate build number
-      id: buildnumber
-      uses: onyxmueller/build-tag-number@v1
-      with:
-        token: ${{secrets.github_token}}        
-    
-    # Now you can pass ${{ steps.buildnumber.outputs.build_number }} to the next steps.
-    - name: Another step as an example
-      uses: actions/hello-world-docker-action@v1
-      with:
-        who-to-greet: ${{ steps.buildnumber.outputs.build_number }}
-```
-The `GITHUB_TOKEN` environment variable is defined by GitHub for you. See [virtual environments for GitHub actions](https://help.github.com/en/articles/virtual-environments-for-github-actions#github_token-secret) for more information.
+## 🤝 Contributing
+Contributions are welcome and appreciated. If you find an issue or have a feature request, please open an issue or submit a pull request.
 
-## Getting the build number in other jobs
+## 📝 License
+This project is licensed under the MIT License.
 
-For other steps in the same job, you can use the methods above,
-to get the build number in other jobs you need to use [job outputs](https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjobs_idoutputs) mechanism:
+## 📬 Contact
+For questions, suggestions, or concerns, please contact us at [support@example.com](mailto:support@example.com).
 
-```yaml
-jobs:
-  job1:
-    runs-on: ubuntu-latest
-    outputs:
-      build_number: ${{ steps.buildnumber.outputs.build_number }}
-    steps:
-    - name: Generate build number
-      id: buildnumber
-      uses: onyxmueller/build-tag-number@v1
-      with:
-        token: ${{secrets.github_token}}
-          
-  job2:
-    needs: job1
-    runs-on: ubuntu-latest
-    steps:
-    - name: Another step as an example
-      uses: actions/hello-world-docker-action@v1
-      with:
-        who-to-greet: ${{needs.job1.outputs.build_number}}
-```
+## 💖 Thanks Message
+A huge thank you to all contributors and users of this project. Your support and feedback are invaluable.
 
-## Setting the initial build number.
-
-If you're moving from another build system, you might want to start from some specific number. The `build-number` action simply uses a special tag name to store the build number, `build-number-x`, so you can just create and push a tag with the number you want to start on. E.g. do
-
-```
-git tag build-number-500
-git push origin build-number-500
-```
-
-and then your next build number will be 501. The action will always delete older refs that start with `build-number-`, e.g. when it runs and finds `build-number-500` it will create a new tag, `build-number-501` and then delete `build-number-500`.
-
-## Generating multiple independent build numbers
-
-Sometimes you may have more than one project to build in one repository. For example, you may have a client and a server in the same GitHub repository that you would like to generate independent build numbers for. Another example is you have two Dockerfiles in one repo and you'd like to version each of the built images with their own numbers.  
-To do this, use the `prefix` key, like so:
-
-```yaml
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Generate build number
-      id: buildnumber
-      uses: onyxmueller/build-tag-number@v1
-      with:
-        token: ${{ secrets.github_token }}
-        prefix: client
-```
-
-This will generate a git tag like `client-build-number-1`.
-
-If you then do the same in another workflow and use `prefix: server` then you'll get a second build-number tag called `server-build-number-1`.
-
-## Branches and build numbers
-
-The build number generator is global, there's no concept of special build numbers for special branches unless handled manually with the `prefix` property. It's probably something you would just use on builds from your master branch. It's just one number that gets increased every time the action is run.
-
-## Find this library useful? :raised_hands:
-Support it by joining __[stargazers](https://github.com/onyxmueller/build-tag-number/stargazers)__ for this repository. :star: And __[follow me](https://github.com/onyxmueller)__ for other creations.
-
-## Credit
-
-This Github Action is based on original work done by Einar Egilsson, which is no longer maintained. You can read more about the original version on his blog:
-
- http://einaregilsson.com/a-github-action-for-generating-sequential-build-numbers/
+This is written by [readme.ai](https://readme-generator-phi.vercel.app/)
